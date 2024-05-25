@@ -1,0 +1,2 @@
+#!/bin/bash
+kill -9 `ps axf | grep "/bin/python ./main.py" | awk '{print $1}' `
