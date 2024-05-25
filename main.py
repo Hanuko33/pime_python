@@ -52,12 +52,16 @@ class Player:
         new_y=self.y+y
         if new_x==world.CHUNKSIZE:
             self.map_x+=1
+            self.x=0
         elif new_x==-1:
             self.map_x-=1
+            self.x=world.CHUNKSIZE-1
         elif new_y==world.CHUNKSIZE-1:
             self.map_y+=1
+            self.y=0
         elif new_y==-1:
             self.map_y-=1
+            self.y=world.CHUNKSIZE-2
         else:
             self.x=new_x
             self.y=new_y
