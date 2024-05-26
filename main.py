@@ -1,17 +1,76 @@
 #!/bin/python
 from random import randint
+import random
 from pygame import Color
 import pygame
 import time
+from enum import Enum
+
+class forms(Enum):
+    SOLID=(0, "solid")
+    LIQUID=(1, "liquid")
+    GAS=(2, "gas")
+
 class Tile:
     def __init__(self, color):
         self.color=color
 
+class Edible:
+    def __init__(self):
+        self.calories = randint(0, 100)
+        self.irrigation = randint(0, 100)
+
+class BaseElement:
+    def name_gen(self) -> str:
+        vowels = "aeiou"
+        consonants = "bcdfghjklmnpqrstvwxyz"
+        
+        length = randint(2, 10)        
+
+        word = []
+        for i in range(length):
+            if i % 2 == 0:
+                word.append(random.choice(vowels))
+            else:
+                word.append(random.choice(consonants))
+        
+        return ''.join(word)
+
+    def __init__(self):
+        self.form = random.choice(list(forms))
+        self.name = self.name_gen()
+        if (randint(0, 100) < 40):
+            self.edible = Edible()
+base_elements: list[BaseElement] = []
+for i in range(50):
+    base_elements.append(BaseElement())
+
+class Item:
+    def __init__(self, x:int, y:int, in_inventory:bool):
+        self.base_element = base_elements[randint(0,49)]
+        self.x=x
+        self.y=y
+        self.in_inventory=in_inventory
+        self.texture=pygame.image.load("items/item.png")
+    def show(self):
+        base_element = self.base_element.name
+        print(f'{base_element=}')
+        form = self.base_element.form.name
+        print(f'{form=}')
+        if hasattr(item.base_element, 'edible'):
+            print("*** Edible ***")
+            calories = self.base_element.edible.calories
+            irrigation = self.base_element.edible.irrigation
+            print(f'    {calories=}')
+            print(f'    {irrigation=}')
+
 class Chunk:
     tiles: list[list[Tile]] = []
-
+    items: list[Item] = []
     def __init__(self, CHUNKSIZE: int):
         self.tiles = [[Tile((randint(0, 255), randint(0, 255), randint(0, 255))) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
+        self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
+
 
 
 class World:
@@ -26,6 +85,7 @@ class World:
             self.chunks[(x, y)] = Chunk(self.CHUNKSIZE)
 
 class Player:
+    inventory: list[Item] = []
     going_right=True
     def __init__(self):
         self.x=0
@@ -44,7 +104,7 @@ class Player:
             self.map_x-=1
             self.x=world.CHUNKSIZE-1
 
-        elif new_y==world.CHUNKSIZE-1:
+        elif new_y==world.CHUNKSIZE:
             self.map_y+=1
             self.y=0
 
@@ -84,13 +144,30 @@ world.generate_chunk(player.map_x, player.map_y)
 # main
 while running:
     keys=pygame.key.get_pressed()
-   
+  
+    # player interact
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+
+            if event.key == pygame.K_SEMICOLON:
+                for item in chunk.items:
+                    if (item.x == player.x) and (item.y == player.y):
+                        print("\n\n\n")
+                        item.show()
     
+            if event.key == pygame.K_e:
+                for item in chunk.items:
+                    if (item.x == player.x) and (item.y == player.y):
+                        player.inventory.append(item)
+                        world.chunks.get((player.map_x, player.map_y)).items.remove(item)
+            if event.key == pygame.K_i:
+                print("\n\n\n")
+                for item in player.inventory:
+                    item.show()
 
-
+    # move interact
     time_period=0.1
     sneak=False
     run=False
@@ -106,6 +183,7 @@ while running:
 
     current_time=time.time()
     if current_time - last_move_time >= time_period:
+
         if keys[pygame.K_w]:
             player.move(0, -1, world)
             last_move_time = current_time
@@ -123,12 +201,11 @@ while running:
             player.going_right=True
             last_move_time = current_time
             player.move(1, 0, world)
-   
+            
 
     if keys[pygame.K_h]:
         print("wasd - move")
         print("q - quit")
-   
 
     screen.fill("black")
 
@@ -145,6 +222,13 @@ while running:
             tileplace_y = j * tile_size
             rect = pygame.Rect(tileplace_x, tileplace_y, tile_size, tile_size)
             pygame.draw.rect(screen, color, rect)
+
+    for item in chunk.items:
+        texture = item.texture
+        x = item.x * tile_size
+        y = item.y * tile_size
+        texture_scaled = pygame.transform.scale(texture, (tile_size, tile_size))
+        screen.blit(texture_scaled, (x, y))
 
     if player.going_right:
         playerr_scaled = pygame.transform.scale(playerr, (tile_size, tile_size))

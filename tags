@@ -24,7 +24,7 @@
 !_TAG_OUTPUT_VERSION	0.0	/current.age/
 !_TAG_PARSER_VERSION!Python	0.0	/current.age/
 !_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
-!_TAG_PROC_CWD	/home/i3riced/game_gui_python/	//
+!_TAG_PROC_CWD	/home/i3riced/pime_python/	//
 !_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
 !_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
 !_TAG_PROGRAM_URL	https://ctags.io/	/official site/
@@ -34,18 +34,74 @@
 !_TAG_ROLE_DESCRIPTION!Python!module	namespace	/namespace from where classes\/variables\/functions are imported/
 !_TAG_ROLE_DESCRIPTION!Python!unknown	imported	/imported from the other module/
 !_TAG_ROLE_DESCRIPTION!Python!unknown	indirectlyImported	/classes\/variables\/functions\/modules imported in alternative name/
+BaseElement	main.py	/^class BaseElement:$/;"	c
 Chunk	main.py	/^class Chunk:$/;"	c
+Edible	main.py	/^class Edible:$/;"	c
+Item	main.py	/^class Item:$/;"	c
 Player	main.py	/^class Player:$/;"	c
+Tile	main.py	/^class Tile:$/;"	c
 World	main.py	/^class World:$/;"	c
+__init__	main.py	/^    def __init__(self):$/;"	m	class:BaseElement
+__init__	main.py	/^    def __init__(self):$/;"	m	class:Edible
 __init__	main.py	/^    def __init__(self):$/;"	m	class:Player
-__init__	main.py	/^    def __init__(self, char):$/;"	m	class:tile
-__init__	main.py	/^    def __init__(self, tile_chars: list[str], MAXTILE: int, CHUNKSIZE: int):$/;"	m	class:Chunk
-__init__	main.py	/^    def __init__(self, tile_chars: list[str], world_size: int, chunk_size: int):$/;"	m	class:World
-chunks	main.py	/^    chunks: list[list[Chunk]] = []$/;"	v	class:World	typeref:typename:list[list[Chunk]]
-draw_chunk	main.py	/^    def draw_chunk(self, x: int, y: int):$/;"	m	class:World
-getc	main.py	/^def getc() -> str:$/;"	f	typeref:typename:str
-keyboard_handle	main.py	/^def keyboard_handle(char: str, player: Player, world: World) -> None:$/;"	f	typeref:typename:None
-main	main.py	/^def main() -> int:$/;"	f	typeref:typename:int
+__init__	main.py	/^    def __init__(self, CHUNKSIZE: int):$/;"	m	class:Chunk
+__init__	main.py	/^    def __init__(self, color):$/;"	m	class:Tile
+__init__	main.py	/^    def __init__(self, world_size: int, chunk_size: int):$/;"	m	class:World
+__init__	main.py	/^    def __init__(self, x:int, y:int, in_inventory:bool):$/;"	m	class:Item
+base_elements	main.py	/^base_elements: list[BaseElement] = []$/;"	v	typeref:typename:list[BaseElement]
+chunk	main.py	/^    chunk = world.chunks.get((player.map_x,player.map_y))$/;"	v
+chunks	main.py	/^    chunks = {}$/;"	v	class:World
+clock	main.py	/^clock = pygame.time.Clock()$/;"	v
+color	main.py	/^            color = chunk.tiles[i][j].color$/;"	v
+current_time	main.py	/^    current_time=time.time()$/;"	v
+dt	main.py	/^    dt = clock.tick(60) \/ 1000$/;"	v
+dt	main.py	/^dt=1$/;"	v
+font	main.py	/^font=pygame.font.Font("nerdfont.otf",32)$/;"	v
+generate_chunk	main.py	/^    def generate_chunk(self, x:int, y:int):$/;"	m	class:World
+going_right	main.py	/^    going_right=True$/;"	v	class:Player
+info	main.py	/^info=360$/;"	v
+items	main.py	/^    items: list[Item] = []$/;"	v	class:Chunk	typeref:typename:list[Item]
+keys	main.py	/^    keys=pygame.key.get_pressed()$/;"	v
+last_move_time	main.py	/^            last_move_time = current_time$/;"	v
+last_move_time	main.py	/^last_move_time = 0$/;"	v
+line	main.py	/^    line = 0$/;"	v
 move	main.py	/^    def move(self, x:int, y:int, world:World):$/;"	m	class:Player
-tile	main.py	/^class tile:$/;"	c
-tiles	main.py	/^    tiles: list[list[tile]] = []$/;"	v	class:Chunk	typeref:typename:list[list[tile]]
+player	main.py	/^player: Player = Player()$/;"	v	typeref:typename:Player
+playerl	main.py	/^playerl=pygame.image.load("player\/playerl.png")$/;"	v
+playerl_scaled	main.py	/^        playerl_scaled = pygame.transform.scale(playerl, (tile_size, tile_size))$/;"	v
+playerr	main.py	/^playerr=pygame.image.load("player\/playerr.png")$/;"	v
+playerr_scaled	main.py	/^        playerr_scaled = pygame.transform.scale(playerr, (tile_size, tile_size))$/;"	v
+rect	main.py	/^            rect = pygame.Rect(tileplace_x, tileplace_y, tile_size, tile_size)$/;"	v
+run	main.py	/^        run=True$/;"	v
+run	main.py	/^    run=False$/;"	v
+run_texture	main.py	/^run_texture=pygame.image.load("gui\/run_icon.png")$/;"	v
+run_texture_scaled	main.py	/^        run_texture_scaled = pygame.transform.scale(run_texture, (tile_size*1.5, tile_size*1.5))$/;"	v
+running	main.py	/^            running = False$/;"	v
+running	main.py	/^        running=False$/;"	v
+running	main.py	/^running = True$/;"	v
+screen	main.py	/^screen = pygame.display.set_mode((screensize+info, screensize+statusbar))$/;"	v
+screensize	main.py	/^screensize=720$/;"	v
+sneak	main.py	/^        sneak=True$/;"	v
+sneak	main.py	/^    sneak=False$/;"	v
+sneak_texture	main.py	/^sneak_texture=pygame.image.load("gui\/sneak_icon.png")$/;"	v
+sneak_texture_scaled	main.py	/^        sneak_texture_scaled = pygame.transform.scale(sneak_texture, (tile_size*1.5, tile_size*1/;"	v
+status	main.py	/^status=""$/;"	v
+status_text	main.py	/^    status_text = font.render(status, True, Color(255,255,255,255))$/;"	v
+status_text_rect	main.py	/^    status_text_rect = (0,screensize)$/;"	v
+statusbar	main.py	/^statusbar=40$/;"	v
+text	main.py	/^    text = font.render(f"map x, y = {player.map_x}, {player.map_y}", True, Color(255,255,255,255/;"	v
+text	main.py	/^    text = font.render(f"over x, y = {player.map_x*world.CHUNKSIZE+player.x}, {player.map_y*worl/;"	v
+text	main.py	/^    text = font.render(f"x, y = {player.x}, {player.y}", True, Color(255,255,255,255))$/;"	v
+text_rect	main.py	/^    text_rect = (screensize, 40*line)$/;"	v
+texture	main.py	/^        texture = item.texture$/;"	v
+texture_scaled	main.py	/^        texture_scaled = pygame.transform.scale(texture, (tile_size, tile_size))$/;"	v
+tile_size	main.py	/^    tile_size = screensize \/ world.CHUNKSIZE$/;"	v
+tileplace_x	main.py	/^            tileplace_x = i * tile_size$/;"	v
+tileplace_y	main.py	/^            tileplace_y = j * tile_size$/;"	v
+tiles	main.py	/^    tiles: list[list[Tile]] = []$/;"	v	class:Chunk	typeref:typename:list[list[Tile]]
+time_period	main.py	/^        time_period=0.05$/;"	v
+time_period	main.py	/^        time_period=0.2$/;"	v
+time_period	main.py	/^    time_period=0.1$/;"	v
+world	main.py	/^world: World = World(world_size=16, chunk_size=16)$/;"	v	typeref:typename:World
+x	main.py	/^        x = item.x * tile_size$/;"	v
+y	main.py	/^        y = item.y * tile_size$/;"	v
