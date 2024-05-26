@@ -111,9 +111,8 @@ class Chunk:
 class World:
     chunks = {}
 
-    def __init__(self, world_size: int, chunk_size: int):
+    def __init__(self, chunk_size: int):
         self.CHUNKSIZE: int = chunk_size
-        self.world_size: int = world_size
     
     def generate_chunk(self, x:int, y:int):
         if (x, y) not in self.chunks:
@@ -167,7 +166,7 @@ screen = pygame.display.set_mode((screensize+info, screensize+statusbar))
 pygame.display.set_caption("pime: python")
 clock = pygame.time.Clock()
 player: Player = Player()
-world: World = World(world_size=16, chunk_size=16)
+world: World = World(chunk_size=16)
 dt=1
 
 def get_item_at_ppos() -> Item:
@@ -215,10 +214,11 @@ while running:
                     if player.selected_inventory > 0:
                         player.selected_inventory-=1
             if event.key == pygame.K_q:
-                player.inventory[player.selected_inventory].x = player.x
-                player.inventory[player.selected_inventory].y = player.y
-                world.chunks.get((player.map_x, player.map_y)).items.append(player.inventory[player.selected_inventory])
-                player.inventory.remove(player.inventory[player.selected_inventory])
+                if len(player.inventory):
+                    player.inventory[player.selected_inventory].x = player.x
+                    player.inventory[player.selected_inventory].y = player.y
+                    world.chunks.get((player.map_x, player.map_y)).items.append(player.inventory[player.selected_inventory])
+                    player.inventory.remove(player.inventory[player.selected_inventory])
             if event.key == pygame.K_TAB: 
                 if player.selected_inventory<(len(player.inventory)-1):
                     player.selected_inventory+=1
