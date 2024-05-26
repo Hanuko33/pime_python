@@ -211,9 +211,9 @@ while running:
                         player.saturation-=edible.poison
                         player.irrigation-=edible.poison
 
+                    player.inventory.remove(player.inventory[player.selected_inventory])
                     if player.selected_inventory > 0:
                         player.selected_inventory-=1
-                    player.inventory.remove(player.inventory[player.selected_inventory])
             if event.key == pygame.K_q:
                 player.inventory[player.selected_inventory].x = player.x
                 player.inventory[player.selected_inventory].y = player.y
