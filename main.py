@@ -6,6 +6,8 @@ import pygame
 import time
 from enum import Enum
 
+LegacyKB = False
+
 solid_path = "textures/items/solid/"
 gas_path = "textures/items/gas/"
 liquid_path = "textures/items/liquid/"
@@ -236,26 +238,39 @@ while running:
                         player.inventory.append(item)
                         world.chunks.get((player.map_x, player.map_y)).items.remove(item)
                         break
+
+            if event.key == pygame.K_ESCAPE:
+                running = False
             if event.key == pygame.K_i:
                 print("\n\n\n")
                 for item in player.inventory:
                     item.show()
+            if LegacyKB:
+                match event.key:
+                    case pygame.K_w:
+                        player.move(0, -1, world)
+                    case pygame.K_s:
+                        player.move(0, 1, world)
+                    case pygame.K_a:
+                        player.move(-1, 0, world)
+                        player.going_right = False
+                    case pygame.K_d:
+                        player.going_right = True
+                        player.move(1, 0, world)
 
     # move interact
-    time_period=0.1
-    sneak=False
-    run=False
+    time_period = 0.1
+    sneak = False
+    run = False
     if keys[pygame.K_LSHIFT]:
-        time_period=0.2
-        sneak=True
+        time_period = 0.2
+        sneak = True
     elif keys[pygame.K_LCTRL]:
-        time_period=0.05
-        run=True
-    
-    if keys[pygame.K_ESCAPE]:
-        running=False
+        time_period = 0.05
+        run = True
 
-    current_time=time.time()
+
+    current_time = time.time()
     if current_time - last_move_time >= time_period:
 
         if keys[pygame.K_w]:

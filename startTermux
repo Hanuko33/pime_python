@@ -1,0 +1,2 @@
+#!/bin/bash
+vncserver -localhost :0; export DISPLAY=:0; xrandr --size 1024x768; python3 main.py; sleep 1; killall Xvnc 
