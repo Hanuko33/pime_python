@@ -12,6 +12,7 @@ solid_path = "textures/items/solid/"
 gas_path = "textures/items/gas/"
 liquid_path = "textures/items/liquid/"
 edible_path = "textures/items/food/"
+game_tiles_path = "textures/game_tiles/"
 textures_solid = []
 textures_solid.append(pygame.image.load(solid_path+"log.png"))
 textures_solid.append(pygame.image.load(solid_path+"sand.png"))
@@ -26,7 +27,25 @@ textures_edible.append(pygame.image.load(edible_path+"cherry.png"))
 textures_edible.append(pygame.image.load(edible_path+"pumpkin.png"))
 textures_edible.append(pygame.image.load(edible_path+"watermelon.png"))
 
+textures_grass = []
+textures_grass.append(pygame.image.load(game_tiles_path+"grass.png"))
+textures_grass.append(pygame.image.load(game_tiles_path+"grass2.png"))
+textures_grass.append(pygame.image.load(game_tiles_path+"grass3.png"))
+
+textures_stone = []
+textures_stone.append(pygame.image.load(game_tiles_path+"stone.png"))
+textures_stone.append(pygame.image.load(game_tiles_path+"stone2.png"))
+textures_stone.append(pygame.image.load(game_tiles_path+"stone3.png"))
+
 BASE_ELEMENTS=100
+
+class biomes(Enum):
+    PLAINS=(0, "plains")
+    FOREST=(1, "forest")
+    MOUNTAINS=(2, "mountains")
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description
 
 class forms(Enum):
     SOLID=(0, "solid")
@@ -35,9 +54,6 @@ class forms(Enum):
     def __init__(self, code, description):
         self.code = code
         self.description = description
-class Tile:
-    def __init__(self, color):
-        self.color=color
 
 class Edible:
     def __init__(self):
@@ -101,11 +117,23 @@ class Item:
                 poison = self.base_element.edible.poison
                 print(f'        {poison=}')
 
+class Tile:
+    def __init__(self, texture):
+        self.texture=texture
+        self.base_element = base_elements[randint(0,BASE_ELEMENTS-1)]
+        while self.base_element.form != forms.SOLID:
+            self.base_element = base_elements[randint(0,BASE_ELEMENTS-1)]
+
 class Chunk:
     tiles: list[list[Tile]] = []
     items: list[Item] = []
+    biome: biomes = biomes(0, "plains")
     def __init__(self, CHUNKSIZE: int):
-        self.tiles = [[Tile((randint(0, 255), randint(0, 255), randint(0, 255))) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
+        self.biome = random.choice(list(biomes))
+        if self.biome == biomes.PLAINS or self.biome == biomes.FOREST:
+            self.tiles = [[Tile(random.choice(textures_grass)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
+        if self.biome == biomes.MOUNTAINS:
+            self.tiles = [[Tile(random.choice(textures_stone)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
         self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
 
 
@@ -306,11 +334,11 @@ while running:
 
     for i in range(world.CHUNKSIZE):
         for j in range(world.CHUNKSIZE):
-            color = chunk.tiles[i][j].color
-            tileplace_x = i * tile_size
-            tileplace_y = j * tile_size
-            rect = pygame.Rect(tileplace_x, tileplace_y, tile_size, tile_size)
-            pygame.draw.rect(screen, color, rect)
+            texture = chunk.tiles[i][j].texture
+            x = i * tile_size
+            y = j * tile_size
+            texture_scaled = pygame.transform.scale(texture, (tile_size, tile_size))
+            screen.blit(texture_scaled, (x, y))
 
     for item in chunk.items:
         texture = item.base_element.texture
@@ -360,6 +388,11 @@ while running:
     text_rect = (screensize, 40*line)
     screen.blit(text,text_rect)
 
+    line += 1
+    text = font.render(f"biome = {chunk.biome.description}", True, Color(255,255,255,255))
+    text_rect = (screensize, 40*line)
+    screen.blit(text,text_rect)
+    
     line += 1
     if get_item_at_ppos():
         text = font.render(f"item: {get_item_at_ppos().base_element.form.description} ({get_item_at_ppos().base_element.name})", True, Color(255,255,255,255))
