@@ -37,6 +37,11 @@ textures_stone.append(pygame.image.load(game_tiles_path+"stone.png"))
 textures_stone.append(pygame.image.load(game_tiles_path+"stone2.png"))
 textures_stone.append(pygame.image.load(game_tiles_path+"stone3.png"))
 
+textures_tree = []
+textures_tree.append(pygame.image.load(game_tiles_path+"tree.png"))
+textures_tree.append(pygame.image.load(game_tiles_path+"tree2.png"))
+textures_tree.append(pygame.image.load(game_tiles_path+"tree3.png"))
+
 BASE_ELEMENTS=100
 
 class biomes(Enum):
@@ -117,6 +122,15 @@ class Item:
                 poison = self.base_element.edible.poison
                 print(f'        {poison=}')
 
+class Tree:
+    def __init__(self, x:int, y:int):
+        self.base_element = base_elements[randint(0,BASE_ELEMENTS-1)]
+        while self.base_element.form != forms.SOLID:
+            self.base_element = base_elements[randint(0,BASE_ELEMENTS-1)]
+        self.x=x
+        self.y=y
+        self.texture = random.choice(textures_tree)
+
 class Tile:
     def __init__(self, texture):
         self.texture=texture
@@ -124,19 +138,36 @@ class Tile:
         while self.base_element.form != forms.SOLID:
             self.base_element = base_elements[randint(0,BASE_ELEMENTS-1)]
 
+class Human:
+    def __init__(self, x:int, y:int):
+        self.x=x
+        self.y=y
+
 class Chunk:
     tiles: list[list[Tile]] = []
     items: list[Item] = []
+    trees: list[Tree] = []
+    human: Human = None
     biome: biomes = biomes(0, "plains")
     def __init__(self, CHUNKSIZE: int):
         self.biome = random.choice(list(biomes))
-        if self.biome == biomes.PLAINS or self.biome == biomes.FOREST:
-            self.tiles = [[Tile(random.choice(textures_grass)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
-        if self.biome == biomes.MOUNTAINS:
-            self.tiles = [[Tile(random.choice(textures_stone)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
-        self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
-
-
+        match self.biome:
+            case biomes.PLAINS:
+                self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
+                self.tiles = [[Tile(random.choice(textures_grass)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
+            case biomes.FOREST:
+                self.trees = [Tree(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1)) for _ in range(CHUNKSIZE//2)]
+                self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
+                self.tiles = [[Tile(random.choice(textures_grass)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
+            case biomes.MOUNTAINS:
+                self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
+                self.tiles = [[Tile(random.choice(textures_stone)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
+        if (randint(0,100)<10):
+            self.human = Human(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1))
+        for item in self.items:
+            for tree in self.trees:
+                if tree.x == item.x and tree.y == item.y:
+                    self.trees.remove(tree)
 
 class World:
     chunks = {}
@@ -144,8 +175,8 @@ class World:
     def __init__(self, chunk_size: int):
         self.CHUNKSIZE: int = chunk_size
     
-    def generate_chunk(self, x:int, y:int):
-        if (x, y) not in self.chunks:
+    def generate_chunk(self, x:int, y:int, force=False):
+        if ((x, y) not in self.chunks) or (force):
             self.chunks[(x, y)] = Chunk(self.CHUNKSIZE)
 
 class Player:
@@ -154,6 +185,7 @@ class Player:
     irrigation: int = 500
     saturation: int = 500
     going_right=True
+    autowalk = False
     def __init__(self):
         self.x=0
         self.y=0
@@ -215,7 +247,7 @@ font=pygame.font.Font("nerdfont.otf",32)
 last_move_time = 0
 status=""
 world.generate_chunk(player.map_x, player.map_y)
-
+direction = 0
 # main
 while running:
     keys=pygame.key.get_pressed()
@@ -225,54 +257,64 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
+            match event.key:
+                case pygame.K_SEMICOLON:
+                    if len(player.inventory):
+                        item = player.inventory[player.selected_inventory]
+                        item.show()
+                case pygame.K_f:
+                    if len(player.inventory) and hasattr(player.inventory[player.selected_inventory].base_element, "edible"):
+                        edible=player.inventory[player.selected_inventory].base_element.edible
+                        player.saturation+=edible.calories
+                        player.irrigation+=edible.irrigation
 
-            if event.key == pygame.K_SEMICOLON:
-                if len(player.inventory):
-                    item = player.inventory[player.selected_inventory]
-                    item.show()
-            if event.key == pygame.K_f:
-                if len(player.inventory) and hasattr(player.inventory[player.selected_inventory].base_element, "edible"):
-                    edible=player.inventory[player.selected_inventory].base_element.edible
-                    player.saturation+=edible.calories
-                    player.irrigation+=edible.irrigation
+                        if hasattr(edible, "poison"):
+                            player.saturation-=edible.poison
+                            player.irrigation-=edible.poison
 
-                    if hasattr(edible, "poison"):
-                        player.saturation-=edible.poison
-                        player.irrigation-=edible.poison
+                        player.inventory.remove(player.inventory[player.selected_inventory])
+                        if player.selected_inventory > 0:
+                            player.selected_inventory-=1
+                case pygame.K_F1:
+                    world.generate_chunk(player.map_x, player.map_y, True)
+                case pygame.K_F2:
+                    player.autowalk = not player.autowalk
+                case pygame.K_q:
+                    if len(player.inventory):
+                        player.inventory[player.selected_inventory].x = player.x
+                        player.inventory[player.selected_inventory].y = player.y
+                        world.chunks.get((player.map_x, player.map_y)).items.append(player.inventory[player.selected_inventory])
+                        player.inventory.remove(player.inventory[player.selected_inventory])
+                case pygame.K_TAB: 
+                    if player.selected_inventory<(len(player.inventory)-1):
+                        player.selected_inventory+=1
+                    else:
+                        player.selected_inventory=0
+                case pygame.K_BACKQUOTE:
+                    if player.selected_inventory>0:
+                        player.selected_inventory-=1 
+                    else:
+                        player.selected_inventory=len(player.inventory)-1
 
-                    player.inventory.remove(player.inventory[player.selected_inventory])
-                    if player.selected_inventory > 0:
-                        player.selected_inventory-=1
-            if event.key == pygame.K_q:
-                if len(player.inventory):
-                    player.inventory[player.selected_inventory].x = player.x
-                    player.inventory[player.selected_inventory].y = player.y
-                    world.chunks.get((player.map_x, player.map_y)).items.append(player.inventory[player.selected_inventory])
-                    player.inventory.remove(player.inventory[player.selected_inventory])
-            if event.key == pygame.K_TAB: 
-                if player.selected_inventory<(len(player.inventory)-1):
-                    player.selected_inventory+=1
-                else:
-                    player.selected_inventory=0
-            if event.key == pygame.K_BACKQUOTE:
-                if player.selected_inventory>0:
-                    player.selected_inventory-=1 
-                else:
-                    player.selected_inventory=len(player.inventory)-1
-
-            if event.key == pygame.K_e or event.key == pygame.K_RETURN:
-                for item in chunk.items:
-                    if (item.x == player.x) and (item.y == player.y):
-                        player.inventory.append(item)
-                        world.chunks.get((player.map_x, player.map_y)).items.remove(item)
-                        break
-
-            if event.key == pygame.K_ESCAPE:
-                running = False
-            if event.key == pygame.K_i:
-                print("\n\n\n")
-                for item in player.inventory:
-                    item.show()
+                case pygame.K_e:
+                    for item in chunk.items:
+                        if (item.x == player.x) and (item.y == player.y):
+                            player.inventory.append(item)
+                            world.chunks.get((player.map_x, player.map_y)).items.remove(item)
+                            break
+                case pygame.K_RETURN:
+                    for item in chunk.items:
+                        if (item.x == player.x) and (item.y == player.y):
+                            player.inventory.append(item)
+                            world.chunks.get((player.map_x, player.map_y)).items.remove(item)
+                            break
+                case pygame.K_ESCAPE:
+                    running = False
+                case pygame.K_i:
+                    print("\n\n\n")
+                    for item in player.inventory:
+                        item.show()
+                
             if LegacyKB:
                 match event.key:
                     case pygame.K_w:
@@ -318,7 +360,19 @@ while running:
             player.going_right=True
             last_move_time = current_time
             player.move(1, 0, world)
-            
+    
+    if player.autowalk:
+        if randint(0,10) == randint(0,10):
+            direction = randint(0,3)
+        match direction:
+            case 0:
+                player.move(0, -1, world)
+            case 1:
+                player.move(1, 0, world)
+            case 2:
+                player.move(0, 1, world)
+            case 3:
+                player.move(-1, 0, world)
 
     if keys[pygame.K_h]:
         print("wasd - move")
@@ -339,11 +393,23 @@ while running:
             y = j * tile_size
             texture_scaled = pygame.transform.scale(texture, (tile_size, tile_size))
             screen.blit(texture_scaled, (x, y))
+    if chunk.human is not None:
+        x = chunk.human.x * tile_size
+        y = chunk.human.y * tile_size
+        texture_scaled = pygame.transform.scale(playerr, (tile_size, tile_size))
+        screen.blit(texture_scaled, (x, y))
 
     for item in chunk.items:
         texture = item.base_element.texture
         x = item.x * tile_size
         y = item.y * tile_size
+        texture_scaled = pygame.transform.scale(texture, (tile_size, tile_size))
+        screen.blit(texture_scaled, (x, y))
+
+    for tree in chunk.trees:
+        texture = tree.texture
+        x = tree.x * tile_size
+        y = tree.y * tile_size
         texture_scaled = pygame.transform.scale(texture, (tile_size, tile_size))
         screen.blit(texture_scaled, (x, y))
 
@@ -418,7 +484,8 @@ while running:
 
     
     pygame.display.flip()
-    dt = clock.tick(60) / 1000
+    if not player.autowalk:
+        dt = clock.tick(60) / 1000
 
 pygame.font.quit()
 pygame.quit()
