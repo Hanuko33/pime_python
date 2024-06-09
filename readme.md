@@ -1,4 +1,4 @@
-# Pime_python (game_gui with python)
+# Pime_python (pime with python)
 
 This is a game made with python and pygame.
 

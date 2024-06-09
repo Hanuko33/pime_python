@@ -156,8 +156,8 @@ class Chunk:
                 self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
                 self.tiles = [[Tile(random.choice(textures_grass)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
             case biomes.FOREST:
-                self.trees = [Tree(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1)) for _ in range(CHUNKSIZE//2)]
-                self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
+                self.trees = [Tree(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1)) for _ in range(CHUNKSIZE*4)]
+                self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//4)]
                 self.tiles = [[Tile(random.choice(textures_grass)) for _ in range(CHUNKSIZE)] for _ in range(CHUNKSIZE)]
             case biomes.MOUNTAINS:
                 self.items = [Item(randint(0,CHUNKSIZE-1), randint(0,CHUNKSIZE-1), False) for _ in range(CHUNKSIZE//2)]
@@ -168,6 +168,9 @@ class Chunk:
             for tree in self.trees:
                 if tree.x == item.x and tree.y == item.y:
                     self.trees.remove(tree)
+        for i in range(len(self.trees)-1):
+            if self.trees[i].x == self.trees[i+1].x and self.trees[i].y == self.trees[i+1].y:
+                self.trees.remove(self.trees[i])
 
 class World:
     chunks = {}
